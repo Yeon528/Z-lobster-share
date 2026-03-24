@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>龙虾挑战赛 - 抽签程序</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        cyber: {
+          dark: '#0a0a1a',
+          primary: '#6366f1',
+          secondary: '#8b5cf6',
+          accent: '#00f2ff',
+          glow: '#a855f7',
+        }
+      },
+      fontFamily: {
+        display: ['Poppins', 'sans-serif'],
+        body: ['Inter', 'sans-serif'],
+      }
+    }
+  }
+}
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+body { 
+  font-family: 'Inter', sans-serif; 
+  background-color: #0a0a1a;
+  background-image: url('https://t1.chatglm.cn/file/69c26cd7c4e0c0347fd757c1.jpg?expired_at=1774781568&sign=ae8732fd51ca983f16c399752353b134&ext=jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+
+.font-display {
+  font-family: 'Poppins', sans-serif;
+}
+
+/* 纯CSS图标 */
+.icon-terminal {
+  width: 20px;
+  height: 16px;
+  border: 2px solid currentColor;
+  border-radius: 3px;
+  position: relative;
+}
+.icon-terminal::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 0;
+  height: 0;
+  border-left: 5px solid currentColor;
+  border-bottom: 3px solid transparent;
+  border-top: 3px solid transparent;
+}
+.icon-terminal::after {
+  content: '';
+  position: absolute;
+  bottom: 3px;
+  right: 3px;
+  width: 6px;
+  height: 2px;
+  background: currentColor;
+}
+
+.icon-user {
+  width: 20px;
+  height: 20px;
+  position: relative;
+}
+.icon-user::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 10px;
+  height: 10px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+}
+.icon-user::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 20px;
+  height: 10px;
+  border: 2px solid currentColor;
+  border-bottom: none;
+  border-radius: 10px 10px 0 0;
+}
+
+.icon-cube {
+  width: 18px;
+  height: 18px;
+  border: 2px solid currentColor;
+  position: relative;
+  transform: rotate(45deg);
+}
+.icon-cube::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 2px;
+  background: currentColor;
+}
+.icon-cube::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 2px;
+  height: 100%;
+  background: currentColor;
+}
+
+.icon-bolt {
+  width: 12px;
+  height: 20px;
+  position: relative;
+}
+.icon-bolt::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 10px solid currentColor;
+}
+.icon-bolt::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 10px solid currentColor;
+}
+
+.icon-check {
+  width: 20px;
+  height: 20px;
+  position: relative;
+}
+.icon-check::before {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 2px;
+  width: 6px;
+  height: 2px;
+  background: currentColor;
+  transform: rotate(45deg);
+}
+.icon-check::after {
+  content: '';
+  position: absolute;
+  top: 5px;
+  left: 6px;
+  width: 12px;
+  height: 2px;
+  background: currentColor;
+  transform: rotate(-45deg);
+}
+
+.icon-clock {
+  width: 18px;
+  height: 18px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  position: relative;
+}
+.icon-clock::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -100%);
+  width: 2px;
+  height: 6px;
+  background: currentColor;
+}
+.icon-clock::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 6px;
+  height: 2px;
+  background: currentColor;
+}
+
+.icon-power {
+  width: 18px;
+  height: 18px;
+  position: relative;
+}
+.icon-power::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 10px;
+  background: currentColor;
+}
+.icon-power::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 0 0 50% 50%;
+}
+
+.icon-list {
+  width: 18px;
+  height: 14px;
+  position: relative;
+}
+.icon-list::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 18px;
+  height: 2px;
+  background: currentColor;
+  box-shadow: 0 6px 0 currentColor, 0 12px 0 currentColor;
+}
+.icon-list::after {
+  content: '';
+  position: absolute;
+  top: 1px;
+  left: 24px;
+  width: 2px;
+  height: 2px;
+  background: currentColor;
+  border-radius: 50%;
+  box-shadow: 0 6px 0 currentColor, 0 12px 0 currentColor;
+}
+
+.icon-alert {
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-bottom: 18px solid currentColor;
+  position: relative;
+}
+.icon-alert::before {
+  content: '!';
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  font-weight: bold;
+  color: #0a0a1a;
+}
+
+.icon-inbox {
+  width: 20px;
+  height: 16px;
+  border: 2px solid currentColor;
+  border-radius: 3px;
+  position: relative;
+}
+.icon-inbox::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 8px;
+  height: 2px;
+  background: currentColor;
+}
+
+.icon-arrow {
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(-45deg);
+}
+
+/* 极简科技玻璃态 */
+.glass {
+  background: rgba(99, 102, 241, 0.08);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.glass-accent {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.1));
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 242, 255, 0.3);
+}
+
+/* 动画 */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes pulse-border {
+  0%, 100% { border-color: rgba(0, 242, 255, 0.3); }
+  50% { border-color: rgba(0, 242, 255, 0.8); }
+}
+
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(139, 92, 246, 0.3); }
+  50% { box-shadow: 0 0 40px rgba(139, 92, 246, 0.6), 0 0 60px rgba(99, 102, 241, 0.3); }
+}
+
+@keyframes scan-line {
+  0% { top: 0; }
+  100% { top: 100%; }
+}
+
+@keyframes number-reveal {
+  0% { transform: scale(0.5); opacity: 0; filter: blur(10px); }
+  100% { transform: scale(1); opacity: 1; filter: blur(0); }
+}
+
+@keyframes slide-up {
+  0% { transform: translateY(20px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+.float-animation {
+  animation: float 6s ease-in-out infinite;
+}
+
+.pulse-border {
+  animation: pulse-border 3s ease-in-out infinite;
+}
+
+.glow-animation {
+  animation: glow 3s ease-in-out infinite;
+}
+
+.number-reveal {
+  animation: number-reveal 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.slide-up {
+  animation: slide-up 0.4s ease-out forwards;
+}
+
+/* 扫描线效果 */
+.scan-overlay::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(0, 242, 255, 0.5), transparent);
+  animation: scan-line 4s linear infinite;
+  pointer-events: none;
+}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(10, 10, 26, 0.5);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #6366f1, #8b5cf6);
+  border-radius: 3px;
+}
+
+/* 选择框样式 */
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2300f2ff'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+}
+
+/* 输入框焦点 */
+input:focus, select:focus {
+  outline: none;
+  border-color: #00f2ff;
+  box-shadow: 0 0 0 2px rgba(0, 242, 255, 0.2), 0 0 20px rgba(0, 242, 255, 0.1);
+}
+
+/* 按钮特效 */
+.cyber-btn {
+  position: relative;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.cyber-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s;
+}
+
+.cyber-btn:hover::before {
+  left: 100%;
+}
+
+.cyber-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(139, 92, 246, 0.4);
+}
+
+/* 结果卡片 */
+.result-card {
+  transition: all 0.3s ease;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.result-card:hover {
+  border-color: rgba(0, 242, 255, 0.5);
+  background: rgba(99, 102, 241, 0.15);
+  transform: translateX(5px);
+}
+
+/* 背景覆盖层 */
+.bg-overlay {
+  background: linear-gradient(135deg, rgba(10, 10, 26, 0.85), rgba(99, 102, 241, 0.3));
+}
+</style>
+</head>
+<body class="min-h-screen overflow-x-hidden relative">
+  <!-- 背景覆盖层 -->
+  <div class="fixed inset-0 bg-overlay pointer-events-none"></div>
+
+  <!-- 主内容 -->
+  <div class="relative z-10 container mx-auto px-4 py-8 max-w-5xl">
+    <!-- 标题区域 -->
+    <header class="text-center mb-12">
+      <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl glass-accent mb-4 float-animation">
+        <span class="text-4xl">🦞</span>
+      </div>
+      <h1 class="font-display text-4xl md:text-5xl font-bold text-white mb-2 tracking-tight">
+        龙虾挑战赛
+      </h1>
+      <div class="flex items-center justify-center gap-2 text-gray-400">
+        <div class="w-8 h-px bg-gradient-to-r from-transparent to-cyber-accent"></div>
+        <span class="text-sm tracking-widest">分享顺序抽签系统</span>
+        <div class="w-8 h-px bg-gradient-to-l from-transparent to-cyber-accent"></div>
+      </div>
+    </header>
+
+    <!-- 抽签区域 -->
+    <section class="mb-10">
+      <div class="glass rounded-2xl p-6 md:p-8 max-w-lg mx-auto relative overflow-hidden scan-overlay">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="w-10 h-10 rounded-lg bg-cyber-primary/20 flex items-center justify-center">
+            <div class="icon-terminal text-cyber-accent"></div>
+          </div>
+          <h2 class="font-display text-lg font-semibold text-white">抽签终端</h2>
+        </div>
+
+        <div class="space-y-5">
+          <!-- 姓名输入 -->
+          <div>
+            <label class="block text-gray-400 text-xs font-medium mb-2 uppercase tracking-wider">
+              <div class="icon-user inline-block mr-2 text-cyber-accent" style="transform: scale(0.8);"></div>
+              参赛者姓名
+            </label>
+            <input 
+              type="text" 
+              id="participantName" 
+              placeholder="输入您的姓名"
+              class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white placeholder-gray-500 transition-all duration-300"
+            >
+          </div>
+
+          <!-- 作品选择 -->
+          <div>
+            <label class="block text-gray-400 text-xs font-medium mb-2 uppercase tracking-wider">
+              <div class="icon-cube inline-block mr-2 text-cyber-accent" style="transform: scale(0.8) rotate(45deg);"></div>
+              参赛作品
+            </label>
+            <select 
+              id="projectSelect"
+              class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white transition-all duration-300 cursor-pointer"
+            >
+              <option value="" class="bg-cyber-dark">选择参赛作品</option>
+            </select>
+          </div>
+
+          <!-- 抽签按钮 -->
+          <button 
+            id="drawBtn"
+            class="cyber-btn w-full py-4 rounded-lg text-white font-display font-semibold tracking-wide glow-animation flex items-center justify-center gap-2"
+          >
+            <div class="icon-bolt"></div>
+            开始抽签
+          </button>
+        </div>
+
+        <!-- 抽签结果展示 -->
+        <div id="drawResult" class="hidden mt-6">
+          <div class="py-6 px-4 rounded-xl glass-accent text-center relative overflow-hidden">
+            <p class="text-gray-400 text-xs uppercase tracking-widest mb-2">您的顺序</p>
+            <div id="drawnNumber" class="font-display text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyber-accent to-cyber-secondary number-reveal">
+              <!-- 动态显示号码 -->
+            </div>
+            <p class="text-white mt-3 font-medium text-lg" id="resultProject"></p>
+          </div>
+        </div>
+
+        <!-- 错误提示 -->
+        <div id="errorMsg" class="hidden mt-4 p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-300 text-sm flex items-center gap-2">
+          <div class="icon-alert" style="transform: scale(0.6);"></div>
+          <span id="errorText"></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 统计信息 -->
+    <section class="mb-8">
+      <div class="flex flex-wrap justify-center gap-4">
+        <div class="glass rounded-xl px-5 py-3 flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-green-500/10 flex items-center justify-center">
+            <div class="icon-check text-green-400"></div>
+          </div>
+          <div>
+            <p class="text-gray-500 text-xs uppercase">已抽签</p>
+            <p class="text-white font-display font-bold text-xl" id="drawnCount">0</p>
+          </div>
+        </div>
+        <div class="glass rounded-xl px-5 py-3 flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
+            <div class="icon-clock text-amber-400"></div>
+          </div>
+          <div>
+            <p class="text-gray-500 text-xs uppercase">待抽签</p>
+            <p class="text-white font-display font-bold text-xl" id="remainingCount">34</p>
+          </div>
+        </div>
+        <button 
+          id="resetBtn"
+          class="glass rounded-xl px-5 py-3 flex items-center gap-3 hover:bg-red-500/10 transition-all duration-300 cursor-pointer group"
+          onclick="confirmReset()"
+        >
+          <div class="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center group-hover:bg-red-500/20 transition-all">
+            <div class="icon-power text-red-400"></div>
+          </div>
+          <div>
+            <p class="text-gray-500 text-xs uppercase">系统</p>
+            <p class="text-white font-medium text-sm">重置</p>
+          </div>
+        </button>
+      </div>
+    </section>
+
+    <!-- 结果列表 -->
+    <section>
+      <div class="glass rounded-2xl p-6 md:p-8">
+        <div class="flex items-center justify-between mb-6">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-lg bg-cyber-primary/20 flex items-center justify-center">
+              <div class="icon-list text-cyber-accent"></div>
+            </div>
+            <h2 class="font-display text-lg font-semibold text-white">顺序列表</h2>
+          </div>
+          <span class="text-gray-500 text-xs uppercase tracking-wider">
+            按 1-34 排序
+          </span>
+        </div>
+
+        <!-- 结果网格 -->
+        <div id="resultList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <!-- 动态生成 -->
+          <div class="col-span-full text-center py-16 text-gray-500">
+            <div class="icon-inbox mx-auto mb-3 opacity-30" style="transform: scale(1.5);"></div>
+            <p class="text-sm">等待数据输入...</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="mt-10 text-center text-gray-600 text-xs">
+      <p>龙虾挑战赛组委会 <span class="mx-2 opacity-50">|</span> 系统版本 2.0</p>
+    </footer>
+  </div>
+
+  <!-- 确认弹窗 -->
+  <div id="confirmModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/70 backdrop-blur-md">
+    <div class="glass rounded-2xl p-6 max-w-sm w-full text-center border border-red-500/30">
+      <div class="w-14 h-14 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-4">
+        <div class="icon-alert text-red-400" style="transform: scale(0.8);"></div>
+      </div>
+      <h3 class="font-display text-lg font-bold text-white mb-2">确认重置系统?</h3>
+      <p class="text-gray-400 text-sm mb-6">此操作将清除所有抽签记录，无法恢复。</p>
+      <div class="flex gap-3">
+        <button onclick="closeModal()" class="flex-1 py-3 rounded-lg bg-white/5 text-gray-300 font-medium hover:bg-white/10 transition-all border border-white/10">
+          取消
+        </button>
+        <button onclick="resetData()" class="flex-1 py-3 rounded-lg bg-red-500/20 text-red-300 font-medium hover:bg-red-500/30 transition-all border border-red-500/30">
+          确认
+        </button>
+      </div>
+    </div>
+  </div>
+
+<script>
+// 参赛作品数据 - 已修正第一个作品名称
+const PROJECTS = [
+  '扶摇',
+  '虾仁',
+  '龙虾军团',
+  'shaw joe',
+  '麻辣小龙虾',
+  'claw-write',
+  '蒸蚌',
+  'White-J',
+  '陈陆',
+  'sre-robot',
+  'Nexus',
+  '人心解码器',
+  '伯乐虾',
+  '像素龙虾',
+  '暴富小马',
+  '漂流海峡的虾',
+  '评虾米',
+  '张无忌',
+  'Betty',
+  '盖章小助手',
+  '生腌小龙虾',
+  'DailyDecode',
+  '波士顿皮皮虾',
+  '智能招聘小助手',
+  '绝不虾审',
+  '贾维斯超级助理',
+  'nano虾',
+  '沙嗲',
+  '贾维斯',
+  '叉烧包',
+  'EverClaw',
+  '波士顿龙虾',
+  '虾标工厂',
+  '小老弟'
+];
+
+// 状态管理
+let drawResults = {};
+let availableNumbers = [];
+
+// DOM 元素
+const projectSelect = document.getElementById('projectSelect');
+const participantName = document.getElementById('participantName');
+const drawBtn = document.getElementById('drawBtn');
+const drawResult = document.getElementById('drawResult');
+const drawnNumber = document.getElementById('drawnNumber');
+const resultProject = document.getElementById('resultProject');
+const errorMsg = document.getElementById('errorMsg');
+const errorText = document.getElementById('errorText');
+const resultList = document.getElementById('resultList');
+const drawnCount = document.getElementById('drawnCount');
+const remainingCount = document.getElementById('remainingCount');
+const confirmModal = document.getElementById('confirmModal');
+
+// 初始化 - 清除旧数据
+function init() {
+  // 清除之前的抽签记录
+  localStorage.removeItem('lobsterDrawResults');
+  drawResults = {};
+  
+  updateAvailableNumbers();
+  populateProjectSelect();
+  updateDisplay();
+}
+
+// 填充作品下拉选项
+function populateProjectSelect() {
+  projectSelect.innerHTML = '<option value="" class="bg-cyber-dark">选择参赛作品</option>';
+  
+  PROJECTS.forEach(project => {
+    const isDrawn = drawResults[project];
+    const option = document.createElement('option');
+    option.value = project;
+    option.className = 'bg-cyber-dark';
+    option.textContent = isDrawn ? `${project} [已抽签]` : project;
+    if (isDrawn) {
+      option.disabled = true;
+      option.className = 'bg-cyber-dark text-gray-500';
+    }
+    projectSelect.appendChild(option);
+  });
+}
+
+// 更新可用号码
+function updateAvailableNumbers() {
+  const usedNumbers = new Set(Object.values(drawResults).map(r => r.order));
+  availableNumbers = [];
+  for (let i = 1; i <= 34; i++) {
+    if (!usedNumbers.has(i)) {
+      availableNumbers.push(i);
+    }
+  }
+}
+
+// 显示错误
+function showError(message) {
+  errorText.textContent = message;
+  errorMsg.classList.remove('hidden');
+  setTimeout(() => {
+    errorMsg.classList.add('hidden');
+  }, 3000);
+}
+
+// 隐藏结果
+function hideResult() {
+  drawResult.classList.add('hidden');
+}
+
+// 抽签
+function draw() {
+  const name = participantName.value.trim();
+  const project = projectSelect.value;
+  
+  if (!name) {
+    showError('请输入姓名');
+    participantName.focus();
+    return;
+  }
+  
+  if (!project) {
+    showError('请选择参赛作品');
+    projectSelect.focus();
+    return;
+  }
+  
+  if (drawResults[project]) {
+    showError(`该作品已抽签，顺序为 #${drawResults[project].order}`);
+    return;
+  }
+  
+  if (availableNumbers.length === 0) {
+    showError('所有号码已抽完');
+    return;
+  }
+  
+  const randomIndex = Math.floor(Math.random() * availableNumbers.length);
+  const drawnNum = availableNumbers[randomIndex];
+  
+  drawResults[project] = {
+    order: drawnNum,
+    name: name,
+    timestamp: Date.now()
+  };
+  
+  updateAvailableNumbers();
+  localStorage.setItem('lobsterDrawResults', JSON.stringify(drawResults));
+  showDrawResult(drawnNum, project, name);
+  populateProjectSelect();
+  updateDisplay();
+  
+  participantName.value = '';
+  projectSelect.value = '';
+}
+
+// 显示抽签结果
+function showDrawResult(number, project, name) {
+  drawnNumber.textContent = number;
+  drawnNumber.className = 'font-display text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyber-accent to-cyber-secondary number-reveal';
+  resultProject.textContent = `${project} / ${name}`;
+  drawResult.classList.remove('hidden');
+  
+  setTimeout(() => {
+    drawnNumber.className = 'font-display text-7xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyber-accent to-cyber-secondary';
+  }, 500);
+}
+
+// 更新显示
+function updateDisplay() {
+  const drawn = Object.keys(drawResults).length;
+  drawnCount.textContent = drawn;
+  remainingCount.textContent = 34 - drawn;
+  renderResultList();
+}
+
+// 渲染结果列表
+function renderResultList() {
+  const entries = Object.entries(drawResults);
+  
+  if (entries.length === 0) {
+    resultList.innerHTML = `
+      <div class="col-span-full text-center py-16 text-gray-500">
+        <div class="icon-inbox mx-auto mb-3 opacity-30" style="transform: scale(1.5);"></div>
+        <p class="text-sm">等待数据输入...</p>
+      </div>
+    `;
+    return;
+  }
+  
+  const sorted = entries.sort((a, b) => a[1].order - b[1].order);
+  
+  resultList.innerHTML = sorted.map(([project, data], index) => `
+    <div class="result-card glass rounded-lg p-3 flex items-center gap-3 slide-up" style="animation-delay: ${index * 0.03}s">
+      <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-cyber-primary to-cyber-secondary flex items-center justify-center flex-shrink-0">
+        <span class="font-display font-bold text-white text-sm">${String(data.order).padStart(2, '0')}</span>
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="text-white text-sm font-medium truncate">${project}</p>
+        <p class="text-gray-500 text-xs truncate">${data.name}</p>
+      </div>
+      <div class="icon-arrow text-cyber-accent opacity-50"></div>
+    </div>
+  `).join('');
+}
+
+// 确认重置
+function confirmReset() {
+  confirmModal.classList.remove('hidden');
+  confirmModal.classList.add('flex');
+}
+
+// 关闭弹窗
+function closeModal() {
+  confirmModal.classList.add('hidden');
+  confirmModal.classList.remove('flex');
+}
+
+// 重置数据
+function resetData() {
+  drawResults = {};
+  localStorage.removeItem('lobsterDrawResults');
+  updateAvailableNumbers();
+  populateProjectSelect();
+  updateDisplay();
+  hideResult();
+  closeModal();
+  participantName.value = '';
+  projectSelect.value = '';
+}
+
+// 事件绑定
+drawBtn.addEventListener('click', draw);
+
+participantName.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') projectSelect.focus();
+});
+
+projectSelect.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') draw();
+});
+
+confirmModal.addEventListener('click', (e) => {
+  if (e.target === confirmModal) closeModal();
+});
+
+init();
+</script>
+</body>
+</html>

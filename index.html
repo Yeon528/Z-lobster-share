@@ -607,62 +607,27 @@ input:focus, select:focus {
 
 <script>
 // ==========================================
-// 初始化 Gun.js 实时数据库
+// Cloudflare Workers API 配置
 // ==========================================
-// 使用公共中继服务器，确保数据在不同用户间同步
-const gun = Gun({
-  peers: [
-    'https://gun-manhattan.herokuapp.com/gun',
-    'https://gun-us.herokuapp.com/gun'
-  ]
-});
-
-// 唯一的数据命名空间，防止与其他应用冲突
-const DRAW_DB = gun.get('lobster-challenge-2024-v3');
+const API_URL = 'https://你的worker地址.workers.dev'; // ← 改成你的 Worker 地址
 
 // 参赛作品数据
 const PROJECTS = [
-  '扶摇',
-  '虾仁',
-  '龙虾军团',
-  'shaw joe',
-  '麻辣小龙虾',
-  'claw-write',
-  '蒸蚌',
-  'White-J',
-  '陈陆',
-  'sre-robot',
-  'Nexus',
-  '人心解码器',
-  '伯乐虾',
-  '像素龙虾',
-  '暴富小马',
-  '漂流海峡的虾',
-  '评虾米',
-  '张无忌',
-  'Betty',
-  '盖章小助手',
-  '生腌小龙虾',
-  'DailyDecode',
-  '波士顿皮皮虾',
-  '智能招聘小助手',
-  '绝不虾审',
-  '贾维斯超级助理',
-  'nano虾',
-  '沙嗲',
-  '贾维斯',
-  '叉烧包',
-  'EverClaw',
-  '波士顿龙虾',
-  '虾标工厂',
-  '小老弟'
+  '扶摇', '虾仁', '龙虾军团', 'shaw joe', '麻辣小龙虾', 'claw-write',
+  '蒸蚌', 'White-J', '陈陆', 'sre-robot', 'Nexus', '人心解码器',
+  '伯乐虾', '像素龙虾', '暴富小马', '漂流海峡的虾', '评虾米',
+  '张无忌', 'Betty', '盖章小助手', '生腌小龙虾', 'DailyDecode',
+  '波士顿皮皮虾', '智能招聘小助手', '绝不虾审', '贾维斯超级助理',
+  'nano虾', '沙嗲', '贾维斯', '叉烧包', 'EverClaw', '波士顿龙虾',
+  '虾标工厂', '小老弟'
 ];
 
 // 状态管理
 let drawResults = {};
 let availableNumbers = [];
+let isSyncing = false;
 
-// DOM 元素
+// DOM 元素（保持不变）
 const projectSelect = document.getElementById('projectSelect');
 const participantName = document.getElementById('participantName');
 const drawBtn = document.getElementById('drawBtn');
@@ -670,11 +635,6 @@ const drawResult = document.getElementById('drawResult');
 const drawnNumber = document.getElementById('drawnNumber');
 const resultProject = document.getElementById('resultProject');
 const errorMsg = document.getElementById('errorMsg');
-const errorText = document.getElementById('errorText');
-const resultList = document.getElementById('resultList');
-const drawnCount = document.getElementById('drawnCount');
-const remainingCount = document.getElementById('remainingCount');
-const syncStatus = document.getElementById('syncStatus');
 
 // ==========================================
 // 核心逻辑

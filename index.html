@@ -5,9 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>龙虾挑战赛 - 抽签程序</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<!-- 引入 Gun.js 实时数据库 -->
-<script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/gun/sea.js"></script>
 <script>
 tailwind.config = {
   theme: {
@@ -279,25 +276,32 @@ body {
   transform: rotate(-45deg);
 }
 
-.icon-sync {
-  width: 16px;
-  height: 16px;
-  border: 2px solid currentColor;
-  border-radius: 50%;
-  border-top-color: transparent;
+.icon-power {
+  width: 18px;
+  height: 18px;
   position: relative;
 }
-.icon-sync::before {
+.icon-power::before {
   content: '';
   position: absolute;
-  top: -3px;
-  right: 2px;
-  width: 0;
-  height: 0;
-  border-left: 4px solid transparent;
-  border-right: 4px solid transparent;
-  border-bottom: 5px solid currentColor;
-  transform: rotate(45deg);
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 10px;
+  background: currentColor;
+}
+.icon-power::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 0 0 50% 50%;
 }
 
 /* 极简科技玻璃态 */
@@ -342,11 +346,6 @@ body {
   100% { transform: translateY(0); opacity: 1; }
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
 .float-animation {
   animation: float 6s ease-in-out infinite;
 }
@@ -361,10 +360,6 @@ body {
 
 .slide-up {
   animation: slide-up 0.4s ease-out forwards;
-}
-
-.spin-animation {
-  animation: spin 2s linear infinite;
 }
 
 /* 扫描线效果 */
@@ -484,11 +479,6 @@ input:focus, select:focus {
             <div class="icon-terminal text-cyber-accent"></div>
           </div>
           <h2 class="font-display text-lg font-semibold text-white">抽签终端</h2>
-          <!-- 同步状态指示器 -->
-          <div id="syncStatus" class="ml-auto flex items-center gap-2 text-xs text-gray-400">
-            <div class="icon-sync spin-animation text-cyber-accent"></div>
-            <span>同步中</span>
-          </div>
         </div>
 
         <div class="space-y-5">
@@ -570,6 +560,21 @@ input:focus, select:focus {
             <p class="text-white font-display font-bold text-xl" id="remainingCount">34</p>
           </div>
         </div>
+
+        <!-- 重置按钮 -->
+        <button 
+          id="resetBtn"
+          class="glass rounded-xl px-5 py-3 flex items-center gap-3 hover:bg-red-500/10 transition-all duration-300 cursor-pointer group"
+          onclick="confirmReset()"
+        >
+          <div class="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center group-hover:bg-red-500/20 transition-all">
+            <div class="icon-power text-red-400"></div>
+          </div>
+          <div class="text-left">
+            <p class="text-gray-500 text-xs uppercase">系统</p>
+            <p class="text-white font-medium text-sm">重置</p>
+          </div>
+        </button>
       </div>
     </section>
 
@@ -601,33 +606,78 @@ input:focus, select:focus {
 
     <!-- 页脚 -->
     <footer class="mt-10 text-center text-gray-600 text-xs">
-      <p>龙虾挑战赛组委会 <span class="mx-2 opacity-50">|</span> 系统版本 3.0 (实时同步版)</p>
+      <p>龙虾挑战赛组委会 <span class="mx-2 opacity-50">|</span> 系统版本 3.3</p>
     </footer>
+  </div>
+
+  <!-- 确认弹窗 -->
+  <div id="confirmModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/70 backdrop-blur-md">
+    <div class="glass rounded-2xl p-6 max-w-sm w-full text-center border border-red-500/30">
+      <div class="w-14 h-14 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-4">
+        <div class="icon-alert text-red-400" style="transform: scale(0.8);"></div>
+      </div>
+      <h3 class="font-display text-lg font-bold text-white mb-2">确认重置系统?</h3>
+      <p class="text-gray-400 text-sm mb-6">此操作将清除所有抽签记录，无法恢复。</p>
+      <div class="flex gap-3">
+        <button onclick="closeModal()" class="flex-1 py-3 rounded-lg bg-white/5 text-gray-300 font-medium hover:bg-white/10 transition-all border border-white/10">
+          取消
+        </button>
+        <button onclick="resetData()" class="flex-1 py-3 rounded-lg bg-red-500/20 text-red-300 font-medium hover:bg-red-500/30 transition-all border border-red-500/30">
+          确认
+        </button>
+      </div>
+    </div>
   </div>
 
 <script>
 // ==========================================
 // Cloudflare Workers API 配置
 // ==========================================
-const API_URL = 'https://你的worker地址.workers.dev'; // ← 改成你的 Worker 地址
+const API_URL = 'https://hidden-sea-e18e.892169637.workers.dev'; // ← 改成你的 Worker 地址
 
 // 参赛作品数据
 const PROJECTS = [
-  '扶摇', '虾仁', '龙虾军团', 'shaw joe', '麻辣小龙虾', 'claw-write',
-  '蒸蚌', 'White-J', '陈陆', 'sre-robot', 'Nexus', '人心解码器',
-  '伯乐虾', '像素龙虾', '暴富小马', '漂流海峡的虾', '评虾米',
-  '张无忌', 'Betty', '盖章小助手', '生腌小龙虾', 'DailyDecode',
-  '波士顿皮皮虾', '智能招聘小助手', '绝不虾审', '贾维斯超级助理',
-  'nano虾', '沙嗲', '贾维斯', '叉烧包', 'EverClaw', '波士顿龙虾',
-  '虾标工厂', '小老弟'
+  '扶摇',
+  '虾仁',
+  '龙虾军团',
+  'shaw joe',
+  '麻辣小龙虾',
+  'claw-write',
+  '蒸蚌',
+  'White-J',
+  '陈陆',
+  'sre-robot',
+  'Nexus',
+  '人心解码器',
+  '伯乐虾',
+  '像素龙虾',
+  '暴富小马',
+  '漂流海峡的虾',
+  '评虾米',
+  '张无忌',
+  'Betty',
+  '盖章小助手',
+  '生腌小龙虾',
+  'DailyDecode',
+  '波士顿皮皮虾',
+  '智能招聘小助手',
+  '绝不虾审',
+  '贾维斯超级助理',
+  'nano虾',
+  '沙嗲',
+  '贾维斯',
+  '叉烧包',
+  'EverClaw',
+  '波士顿龙虾',
+  '虾标工厂',
+  '小老弟'
 ];
 
 // 状态管理
 let drawResults = {};
 let availableNumbers = [];
-let isSyncing = false;
 
-// DOM 元素（保持不变）
+// DOM 元素
 const projectSelect = document.getElementById('projectSelect');
 const participantName = document.getElementById('participantName');
 const drawBtn = document.getElementById('drawBtn');
@@ -635,45 +685,78 @@ const drawResult = document.getElementById('drawResult');
 const drawnNumber = document.getElementById('drawnNumber');
 const resultProject = document.getElementById('resultProject');
 const errorMsg = document.getElementById('errorMsg');
+const errorText = document.getElementById('errorText');
+const resultList = document.getElementById('resultList');
+const drawnCount = document.getElementById('drawnCount');
+const remainingCount = document.getElementById('remainingCount');
+const confirmModal = document.getElementById('confirmModal');
 
 // ==========================================
-// 核心逻辑
+// 核心逻辑：URL 参数同步
 // ==========================================
 
 // 初始化
 function init() {
-  // 1. 监听数据库变化 (实时同步核心)
-  DRAW_DB.map().on((data, key) => {
-    if (data && data.order) {
-      // 更新本地状态
-      drawResults[key] = data;
-      updateAvailableNumbers();
-      populateProjectSelect();
-      updateDisplay();
-      updateSyncStatus(true);
-    }
-  });
-
+  // 1. 尝试从 URL 读取数据
+  loadFromURL();
+  
   // 2. 初始化 UI
   populateProjectSelect();
   updateDisplay();
 }
 
-// 更新同步状态图标
-function updateSyncStatus(connected) {
-  if (connected) {
-    syncStatus.innerHTML = `
-      <div class="w-2 h-2 rounded-full bg-green-400"></div>
-      <span>已同步</span>
-    `;
-    syncStatus.classList.remove('text-gray-400');
-    syncStatus.classList.add('text-green-400');
-  } else {
-    syncStatus.innerHTML = `
-      <div class="icon-sync spin-animation text-amber-400"></div>
-      <span>同步中</span>
-    `;
+// 从 URL 加载数据
+function loadFromURL() {
+  try {
+    const hash = window.location.hash.substring(1); // 去掉 #
+    if (hash) {
+      const decoded = decodeURIComponent(atob(hash));
+      const data = JSON.parse(decoded);
+      if (data && typeof data === 'object') {
+        drawResults = data;
+        updateAvailableNumbers();
+      }
+    }
+  } catch (e) {
+    console.error("URL数据解析失败，将使用空数据", e);
+    drawResults = {};
   }
+}
+
+// 保存数据到 URL (不刷新页面，只更新 hash)
+function saveToURL() {
+  try {
+    const jsonStr = JSON.stringify(drawResults);
+    const encoded = btoa(unescape(encodeURIComponent(jsonStr)));
+    window.location.hash = encoded;
+  } catch (e) {
+    console.error("保存数据到URL失败", e);
+  }
+}
+
+// 确认重置
+function confirmReset() {
+  confirmModal.classList.remove('hidden');
+  confirmModal.classList.add('flex');
+}
+
+// 关闭弹窗
+function closeModal() {
+  confirmModal.classList.add('hidden');
+  confirmModal.classList.remove('flex');
+}
+
+// 重置数据
+function resetData() {
+  drawResults = {};
+  window.location.hash = ''; // 清除 URL 数据
+  updateAvailableNumbers();
+  populateProjectSelect();
+  updateDisplay();
+  hideResult();
+  closeModal();
+  participantName.value = '';
+  projectSelect.value = '';
 }
 
 // 填充作品下拉选项
@@ -694,7 +777,6 @@ function populateProjectSelect() {
     projectSelect.appendChild(option);
   });
   
-  // 恢复选择状态（如果该选项未被禁用）
   if (currentValue && !drawResults[currentValue]) {
     projectSelect.value = currentValue;
   }
@@ -742,9 +824,8 @@ function draw() {
     return;
   }
   
-  // 双重检查：再次确认该作品未被抽签（防止并发冲突）
   if (drawResults[project]) {
-    showError(`该作品已被抽签，顺序为 #${drawResults[project].order}`);
+    showError(`该作品已抽签，顺序为 #${drawResults[project].order}`);
     return;
   }
   
@@ -753,27 +834,24 @@ function draw() {
     return;
   }
   
-  // 随机抽取
   const randomIndex = Math.floor(Math.random() * availableNumbers.length);
   const drawnNum = availableNumbers[randomIndex];
   
-  // 构造结果对象
-  const resultData = {
+  drawResults[project] = {
     order: drawnNum,
     name: name,
     timestamp: Date.now()
   };
   
-  // ==========================================
-  // 关键：保存到 Gun.js 数据库
-  // 这会自动同步到所有在线用户
-  // ==========================================
-  DRAW_DB.get(project).put(resultData);
+  // 更新 URL
+  saveToURL();
   
-  // 显示结果
+  // 更新界面
+  updateAvailableNumbers();
   showDrawResult(drawnNum, project, name);
+  populateProjectSelect();
+  updateDisplay();
   
-  // 清空输入
   participantName.value = '';
   projectSelect.value = '';
 }
@@ -837,6 +915,10 @@ participantName.addEventListener('keypress', (e) => {
 
 projectSelect.addEventListener('keypress', (e) => {
   if (e.key === 'Enter') draw();
+});
+
+confirmModal.addEventListener('click', (e) => {
+  if (e.target === confirmModal) closeModal();
 });
 
 // 启动应用
